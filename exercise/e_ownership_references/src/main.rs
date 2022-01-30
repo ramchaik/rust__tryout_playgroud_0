@@ -33,11 +33,7 @@ fn change(s: &mut String) {
 }
 
 fn eat(s: String) -> bool {
-    if s.starts_with("b") && s.contains("a") {
-      true
-    } else {
-      false
-    }
+    s.starts_with("b") && s.contains("a")
 }
 
 fn add(a: &i32, b: &i32) -> i32 {
