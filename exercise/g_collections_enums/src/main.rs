@@ -21,14 +21,12 @@ fn main() {
 
     for coord in arrow_coords {
         coord.print_description();
-        let dfc = coord.distance_from_center();
-        if dfc < 1.0 {
-            shots.push(Shot::Bullseye);
-        } else if dfc >= 1.0 && dfc <= 5.0 {
-            shots.push(Shot::Hit(dfc));
-        } else {
-            shots.push(Shot::Miss);
-        }
+        let shot = match coord.distance_from_center() {
+            dfc if dfc < 1.0 => Shot::Bullseye,
+            dfc if dfc >= 1.0 && dfc <= 5.0 => Shot::Hit(dfc),
+            _ => Shot::Miss,
+        };
+        shots.push(shot);
     }
 
     let mut total = 0;
