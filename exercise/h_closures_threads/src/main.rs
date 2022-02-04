@@ -1,5 +1,3 @@
-// Silence some warnings so they don't distract from the exercise.
-#![allow(dead_code, unused_imports, unused_variables)]
 use crossbeam::channel;
 use std::thread;
 use std::time::Duration;
@@ -42,7 +40,6 @@ fn main() {
     // Cloning a channel makes another variable connected to that end of the channel so that you can
     // send it to another thread.
     let tx2 = tx.clone();
-    let rx2 = rx.clone();
 
     let handle_a = thread::spawn(move || {
         pause_ms(150);
