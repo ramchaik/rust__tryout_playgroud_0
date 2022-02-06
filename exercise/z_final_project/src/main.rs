@@ -100,8 +100,7 @@ fn main() {
 }
 
 fn open_image(filename: String, err_msg: &str) -> image::DynamicImage {
-    let img = image::open(filename).expect(err_msg);
-    img
+    image::open(filename).expect(err_msg)
 }
 
 fn save_image(img: &image::DynamicImage, filename: String, err_msg: &str) {
