@@ -29,8 +29,7 @@ fn main() {
             .long("crop")
             .value_name("CROP_VALUE")
             .help("Crops the image. (x,y,width,height) eg: --crop=4,3,5,6")
-            .takes_value(true)
-        )
+            .takes_value(true))
         .get_matches();
 
     /*
@@ -121,9 +120,9 @@ fn brighten(infile: String, outfile: String, brighten_amount: i32) {
     save_image(&img2, outfile, "Failed to save OUTFILE.");
 }
 
-fn crop(infile: String, outfile: String, crop_value: (u32, u32, u32, u32)) {
+fn crop(infile: String, outfile: String, (x, y, width, height): (u32, u32, u32, u32)) {
     let mut img = open_image(infile, "Failed to open INFILE.");
-    let img2 = img.crop(crop_value.0, crop_value.1, crop_value.2, crop_value.3);
+    let img2 = img.crop(x, y, width, height);
     save_image(&img2, outfile, "Failed to save OUTFILE.");
 }
 
