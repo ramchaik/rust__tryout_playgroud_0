@@ -30,6 +30,11 @@ fn main() {
             .value_name("CROP_VALUE")
             .help("Crops the image. (x,y,width,height) eg: --crop=4,3,5,6")
             .takes_value(true))
+        .arg(Arg::with_name("rotate")
+            .long("rotate")
+            .value_name("ROTATE_VALUE")
+            .help("Rotates the image. (90, 180, 270) eg: --rotate=90")
+            .takes_value(true))
         .get_matches();
 
     /*
@@ -57,6 +62,18 @@ fn main() {
         None => (0, 0, 0, 0),
     };
 
+    let rotate_value = match matches.value_of("rotate") {
+        Some(rotate_value) => {
+            let value = rotate_value.parse::<i32>().expect("Failed to parse crop value");
+            if value == 90 || value == 180 || value == 270 {
+                value
+            } else {
+                println!("Invalid rotation value. Valid values are 90, 180, 270");
+                std::process::exit(1);
+            }
+        },
+        None => 0,
+    };
     /*
     // handle args with value
     // TODO: refactor this to use match instead of if let
@@ -76,8 +93,10 @@ fn main() {
         crop(input.to_string(), output.to_string(), crop_value);
     }
 
-    // **OPTION**
-    // Rotate -- see the rotate() function below
+    if rotate_value != 0 {
+        println!("Rotating image {} to {} with {}", input, output, rotate_value);
+        rotate(input.to_string(), output.to_string(), rotate_value);
+    }
 
     // **OPTION**
     // Invert -- see the invert() function below
@@ -125,19 +144,22 @@ fn crop(infile: String, outfile: String, (x, y, width, height): (u32, u32, u32, 
     save_image(&img2, outfile, "Failed to save OUTFILE.");
 }
 
-fn rotate(infile: String, outfile: String) {
-    // See blur() for an example of how to open an image.
+fn rotate(infile: String, outfile: String, rotate_value: i32) {
+    let img = open_image(infile, "Failed to open INFILE.");
 
-    // There are 3 rotate functions to choose from (all clockwise):
-    //   .rotate90()
-    //   .rotate180()
-    //   .rotate270()
-    // All three methods return a new image.  Pick one and use it!
-
-    // Challenge: parse the rotation amount from the command-line, pass it
-    // through to this function to select which method to call.
-
-    // See blur() for an example of how to save the image.
+    if rotate_value == 90 {
+        let img2 = img.rotate90();
+        save_image(&img2, outfile, "Failed to save OUTFILE.");
+    } else if rotate_value == 180 {
+        let img2 = img.rotate180();
+        save_image(&img2, outfile, "Failed to save OUTFILE.");
+    } else if rotate_value == 270 {
+        let img2 = img.rotate270();
+        save_image(&img2, outfile, "Failed to save OUTFILE.");
+    } else {
+        println!("Invalid rotation value. Valid values are 90, 180, 270");
+        std::process::exit(1);
+    }
 }
 
 fn invert(infile: String, outfile: String) {
