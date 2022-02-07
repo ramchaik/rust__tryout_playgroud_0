@@ -35,6 +35,19 @@ fn main() {
             .value_name("ROTATE_VALUE")
             .help("Rotates the image. (90, 180, 270) eg: --rotate=90")
             .takes_value(true))
+         .arg(Arg::with_name("invert")
+            .long("invert")
+            .help("Inverts colors of the image. eg: --invert"))
+         .arg(Arg::with_name("grayscale")
+            .long("grayscale")
+            .help("Greyscales the image. eg: --grayscale"))
+         .arg(Arg::with_name("fractal")
+            .long("fractal")
+            .help("Fractal the image. eg: --fractal"))
+        .arg(Arg::with_name("generate")
+            .long("generate")
+            .value_name("GEN_VALUE")
+            .help("Generate the image. u8 (r,b,g) -> (9,1,2) eg: --generate=9,1,2"))
         .get_matches();
 
     /*
@@ -64,7 +77,7 @@ fn main() {
 
     let rotate_value = match matches.value_of("rotate") {
         Some(rotate_value) => {
-            let value = rotate_value.parse::<i32>().expect("Failed to parse crop value");
+            let value = rotate_value.parse::<i32>().expect("Failed to parse rotate value");
             if value == 90 || value == 180 || value == 270 {
                 value
             } else {
@@ -74,6 +87,15 @@ fn main() {
         },
         None => 0,
     };
+
+    let generate_value = match matches.value_of("generate") {
+        Some(gen_value) => {
+            let values = gen_value.split(",").map(|x| x.parse::<u8>().expect("Failed to parse generate value")).collect::<Vec<u8>>();
+            (values[0], values[1], values[2])
+        },
+        None => (0,0,0),
+    };
+
     /*
     // handle args with value
     // TODO: refactor this to use match instead of if let
@@ -93,29 +115,37 @@ fn main() {
         crop(input.to_string(), output.to_string(), crop_value);
     }
 
+    if generate_value.0 != 0 && generate_value.1 != 0 && generate_value.2 != 0 {
+        println!("Generating image {} to {} with {:?}", input, output, generate_value);
+        generate(output.to_string(), generate_value);
+        return;
+    }
+
     if rotate_value != 0 {
         println!("Rotating image {} to {} with {}", input, output, rotate_value);
         rotate(input.to_string(), output.to_string(), rotate_value);
     }
 
-    // **OPTION**
-    // Invert -- see the invert() function below
+    if matches.is_present("grayscale") {
+        println!("Grayscaling image {} to {}", input, output);
+        grayscale(input.to_string(), output.to_string());
+    }
 
-    // **OPTION**
-    // Grayscale -- see the grayscale() function below
+    if matches.is_present("invert") {
+        println!("Inverting image {} to {}", input, output);
+        invert(input.to_string(), output.to_string());
+    }
 
-    // A VERY DIFFERENT EXAMPLE...a really fun one. :-)
-    //     "fractal" => {
-    //         if args.len() != 1 {
-    //             print_usage_and_exit();
-    //         }
-    //         let outfile = args.remove(0);
-    //         fractal(outfile);
-    //     }
-    //
-    //     // **OPTION**
-    //     // Generate -- see the generate() function below -- this should be sort of like "fractal()"!
-    //
+    if matches.is_present("fractal") {
+        println!("Fractaling image {}", output);
+        fractal(output.to_string());
+    }
+    
+    if matches.is_present("generate") {
+        println!("Fractaling image {}", output);
+        fractal(output.to_string());
+    }
+
 }
 
 fn open_image(filename: String, err_msg: &str) -> image::DynamicImage {
@@ -163,35 +193,31 @@ fn rotate(infile: String, outfile: String, rotate_value: i32) {
 }
 
 fn invert(infile: String, outfile: String) {
-    // See blur() for an example of how to open an image.
-
-    // .invert() takes no arguments and converts the image in-place, so you
-    // will use the same image to save out to a different file.
-
-    // See blur() for an example of how to save the image.
+    let mut img = open_image(infile, "Failed to open INFILE.");
+    img.invert();
+    save_image(&img, outfile, "Failed to save OUTFILE.");
 }
 
 fn grayscale(infile: String, outfile: String) {
-    // See blur() for an example of how to open an image.
-
-    // .grayscale() takes no arguments. It returns a new image.
-
-    // See blur() for an example of how to save the image.
+    let img = open_image(infile, "Failed to open INFILE.");
+    let img2 = img.grayscale();
+    save_image(&img2, outfile, "Failed to save OUTFILE.");
 }
 
-fn generate(outfile: String) {
-    // Create an ImageBuffer -- see fractal() for an example
+fn generate(outfile: String, (r,b,g): (u8, u8, u8)) {
+    let width = 800;
+    let height = 800;
 
-    // Iterate over the coordinates and pixels of the image -- see fractal() for an example
+    let mut imgbuf = image::ImageBuffer::new(width, height);
 
-    // Set the image to some solid color. -- see fractal() for an example
+    for (_, _, pixel) in imgbuf.enumerate_pixels_mut() {
+        let red = r;
+        let blue = b;
+        let green = g;
 
-    // Challenge: parse some color data from the command-line, pass it through
-    // to this function to use for the solid color.
-
-    // Challenge 2: Generate something more interesting!
-
-    // See blur() for an example of how to save the image
+        *pixel = image::Rgb([red, green, blue]);
+    }
+    imgbuf.save(outfile).unwrap();
 }
 
 // This code was adapted from https://github.com/PistonDevelopers/image
